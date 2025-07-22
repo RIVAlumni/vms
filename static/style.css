@@ -7,7 +7,7 @@ body {
 h1 {
   color: #333;
 }
-form, table {
+form {
   background: white;
   padding: 15px;
   border-radius: 8px;

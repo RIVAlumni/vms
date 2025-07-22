@@ -86,7 +86,7 @@ async def submit(
         raise HTTPException(status_code=400, detail="Name too long")
 
     c.execute("INSERT INTO visitors (nric, fullname, phone, datetime, operator) VALUES (?, ?, ?, ?, ?)",
-              (nric, fullname, phone, now, operator))
+              (nric.upper(), fullname, phone, now, operator))
     log_event(ip, operator, f"Submit: nric {nric} fullname {fullname} phone {phone} datetime {now} operator {operator} OK")
     conn.commit()
     conn.close()

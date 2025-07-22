@@ -1,6 +1,6 @@
 # Log and database files
 visitor.log
-visitor.db
+visitors.db
 
 
 # Byte-compiled / optimized / DLL files

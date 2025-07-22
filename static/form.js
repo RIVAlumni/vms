@@ -1,7 +1,9 @@
 function parseQR(val) {
+  console.log(val);
   if (!val.includes("|")) return;
   let parts = val.split("|");
-  if (parts.length === 4) {
+  console.log(parts);
+  if (parts.length >= 4) {
     document.getElementById("nric").value = parts[1];
     document.getElementById("phone").value = parts[2];
     document.getElementById("fullname").value = parts[3];
@@ -19,7 +21,16 @@ function submitForm(e) {
       if (res.status === "OK") {
         document.getElementById("status").textContent = `✅ Entry recorded for ${fullname} (${nric}, ${phone})`;
       } else {
-        document.getElementById("status").textContent = `⚠️ Duplicate entry: ${fullname} (${nric}, ${phone}) at ${res.datetime} by ${res.operator}`;
+        document.getElementById("status").textContent = `⚠️ Duplicate entry: (${nric}), ${res.fullname}, ${res.phone} at ${res.datetime} by ${res.operator}`;
       }
     });
+}
+const cookies = document.cookie.split("; ");
+for (let cookie of cookies) {
+	const [key, value] = cookie.split("=");
+	if (key === "operator") {
+		operator_name = decodeURIComponent(value);
+		let returnText = document.getElementById("operator_name");
+		returnText.innerHTML = `Operator: ${operator_name}`;
+	}
 }

@@ -2,18 +2,24 @@
 <html>
 <head>
   <title>Visitor Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/form.js" defer></script>
 </head>
 <body>
   <h1>Visitor Management</h1>
+  <p id="operator_name" class="text-end"></p>
   <form onsubmit="submitForm(event)">
     <p>Full Name: <input type="text" id="fullname" name="fullname" maxlength="66" required pattern="[A-Za-z0-9\s]+"></p>
     <p>NRIC: <input type="text" id="nric" name="nric" required pattern="\w\d{7}\w"></p>
     <p>Phone: <input type="text" id="phone" name="phone" required pattern="\d{8}"></p>
     <p><button type="submit">Submit</button></p>
   </form>
-  <input type="text" id="qrinput" placeholder="Scan QR here..." oninput="parseQR(this.value)" />
-  <p id="status"></p>
+  <div class="form-floating">
+    <textarea id="qr" class="form-control" onKeyUp="parseQR(this.value)" placeholder="QR Code"></textarea> 
+    <p id="status"></p>
+    <label for="floatingTextarea">Scan QR Code here</label>
+  </div>
 </body>
 </html>
