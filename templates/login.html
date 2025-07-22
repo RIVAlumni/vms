@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/login.js" defer></script>
+</head>
+<body>
+  <h1>Login</h1>
+  <form onsubmit="login(event)">
+    <p>Operator Name: <input type="text" id="operator" name="operator" maxlength="66" required pattern="[A-Za-z0-9\s]+"></p>
+    <p><button type="submit">Login</button></p>
+  </form>
+</body>
+</html>

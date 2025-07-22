@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Visitor Search</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/search.js" defer></script>
+</head>
+<body>
+  <h1>Visitor Records</h1>
+  <div>
+    <label>NRIC: <input type="text" id="nricFilter" /></label>
+    <label>Full Name: <input type="text" id="fullnameFilter" /></label>
+    <label>Phone: <input type="text" id="phoneFilter" /></label>
+    <label>Datetime: <input type="text" id="timeFilter" /></label>
+    <label>Operator: <input type="text" id="opFilter" /></label>
+    <button onclick="loadTable(1)">Search</button>
+  </div>
+  <div>
+    <button onclick="prevPage()">Prev</button>
+    <span id="pageNum">1</span>
+    <button onclick="nextPage()">Next</button>
+  </div>
+  <table border="1" id="visitorTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">NRIC</th>
+        <th onclick="sortTable(1)">Full Name</th>
+        <th onclick="sortTable(2)">Phone</th>
+        <th onclick="sortTable(3)">Datetime</th>
+        <th onclick="sortTable(4)">Operator</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</body>
+</html>

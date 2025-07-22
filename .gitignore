@@ -1,3 +1,8 @@
+# Log and database files
+visitor.log
+visitor.db
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

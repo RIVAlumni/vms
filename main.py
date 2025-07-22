@@ -1,0 +1,143 @@
+from fastapi import FastAPI, Request, Form, Response, Cookie, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from typing import Optional
+import sqlite3
+from datetime import datetime
+import re, logging
+
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+LOG_FMT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=LOG_FMT, filename="visitor.log", level=logging.INFO, encoding='utf-8')
+
+DB = "visitors.db"
+
+def init_db():
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS visitors (
+    nric TEXT PRIMARY KEY,
+    fullname TEXT,
+    phone TEXT,
+    datetime TEXT,
+    operator TEXT
+    )''')
+    conn.commit()
+    conn.close()
+
+def log_event(ip: str, op: str, detail: str):
+    logging.info(f"{ip} - {op} - {detail}")
+
+@app.on_event("startup")
+def startup():
+    init_db()
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request, operator: Optional[str] = Cookie(default=None)):
+    if not operator:
+        return RedirectResponse("/login")
+    return templates.TemplateResponse("form.html", {"request": request, "operator": operator})
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def login_post(request: Request, response: Response, operator: str = Form(...)):
+    response = RedirectResponse("/", status_code=302)
+    response.set_cookie(key="operator", value=operator)
+    ip = request.client.host
+    log_event(ip, operator, "Login")
+    return response
+
+@app.post("/submit")
+async def submit(
+    request: Request,
+    fullname: str = Form(...),
+    nric: str = Form(...),
+    phone: str = Form(...),
+    operator: Optional[str] = Cookie(default=None)
+):
+    if not operator:
+        return JSONResponse({"status": "ERROR", "msg": "Unauthorized"}, status_code=401)
+
+    ip = request.client.host
+
+    now = datetime.now().isoformat()
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute("SELECT * FROM visitors WHERE nric = ?", (nric, ))
+    row = c.fetchone()
+    if row:
+        conn.close()
+        log_event(ip, operator, f"Submit: nric {row[0]} fullname {row[1]} phone {row[2]} datetime {row[3]} operator {row[4]} FAIL")
+        return {"status": "FAIL", "nric": row[0], "fullname": row[1], "phone": row[2], "datetime": row[3], "operator": row[4]}
+
+    # Validation
+    if not re.fullmatch(r"\w\d{7}\w", nric):
+        raise HTTPException(status_code=400, detail="Invalid NRIC")
+    if not re.fullmatch(r"\d{8}", phone):
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    if len(fullname) > 66 or len(operator) > 66:
+        raise HTTPException(status_code=400, detail="Name too long")
+
+    c.execute("INSERT INTO visitors (nric, fullname, phone, datetime, operator) VALUES (?, ?, ?, ?, ?)",
+              (nric, fullname, phone, now, operator))
+    log_event(ip, operator, f"Submit: nric {nric} fullname {fullname} phone {phone} datetime {now} operator {operator} OK")
+    conn.commit()
+    conn.close()
+    return {"status": "OK"}
+
+@app.get("/search", response_class=HTMLResponse)
+async def search_page(request: Request, operator: Optional[str] = Cookie(default=None)):
+    if not operator:
+        return RedirectResponse("/login")
+    return templates.TemplateResponse("search.html", {"request": request})
+
+@app.get("/list")
+async def list_visitors(
+    request: Request,
+    page: int = 1,
+    nric: str = "",
+    fullname: str = "",
+    phone: str = "",
+    time: str = "",
+    opfilter: str = "",
+    operator: Optional[str] = Cookie(default=None),
+    limit: int = 50
+):
+    offset = (page - 1) * limit
+    params = []
+    query = "SELECT nric, fullname, phone, datetime, operator FROM visitors WHERE 1=1"
+
+    if nric:
+        query += " AND nric LIKE ?"
+        params.append(f"%{nric}%")
+    if fullname:
+        query += " AND fullname LIKE ?"
+        params.append(f"%{fullname}%")
+    if phone:
+        query += " AND phone LIKE ?"
+        params.append(f"%{phone}%")
+    if time:
+        query += " AND datetime LIKE ?"
+        params.append(f"%{time}%")
+    if opfilter:
+        query += " AND operator LIKE ?"
+        params.append(f"%{opfilter}%")
+
+    query += f" ORDER BY datetime DESC LIMIT {limit} OFFSET ?"
+    ip = request.client.host
+    log_event(ip, operator, f"Query: {query}")
+    params.append(offset)
+
+    conn = sqlite3.connect(DB)
+    c = conn.cursor()
+    c.execute(query, params)
+    rows = c.fetchall()
+    conn.close()
+    return {"rows": rows}

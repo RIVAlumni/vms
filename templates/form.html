@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Visitor Form</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/form.js" defer></script>
+</head>
+<body>
+  <h1>Visitor Management</h1>
+  <form onsubmit="submitForm(event)">
+    <p>Full Name: <input type="text" id="fullname" name="fullname" maxlength="66" required pattern="[A-Za-z0-9\s]+"></p>
+    <p>NRIC: <input type="text" id="nric" name="nric" required pattern="\w\d{7}\w"></p>
+    <p>Phone: <input type="text" id="phone" name="phone" required pattern="\d{8}"></p>
+    <p><button type="submit">Submit</button></p>
+  </form>
+  <input type="text" id="qrinput" placeholder="Scan QR here..." oninput="parseQR(this.value)" />
+  <p id="status"></p>
+</body>
+</html>
