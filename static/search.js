@@ -1,34 +1,75 @@
-let currentPage = 1;
-function loadTable(page = 1) {
-  currentPage = page;
-  const params = new URLSearchParams({
-    page: currentPage,
-    nric: document.getElementById("nricFilter").value,
-    fullname: document.getElementById("fullnameFilter").value,
-    phone: document.getElementById("phoneFilter").value,
-    time: document.getElementById("timeFilter").value,
-    opfilter: document.getElementById("opFilter").value
-  });
-  fetch(`/list?${params.toString()}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("pageNum").textContent = currentPage;
-      const tbody = document.querySelector("#visitorTable tbody");
-      tbody.innerHTML = "";
-      data.rows.forEach(row => {
-        const tr = document.createElement("tr");
-        row.forEach((cell, idx) => {
-          const td = document.createElement("td");
-          if (idx === 3) td.textContent = new Date(cell).toLocaleString();
-          else td.textContent = cell;
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-    });
+function isoToLocal(iso) {
+  const date = new Date(iso);
+  return date.toLocaleString('sv-SE').replace('T', ' ');
 }
-function prevPage() { if (currentPage > 1) loadTable(currentPage - 1); }
-function nextPage() { loadTable(currentPage + 1); }
+
+const form = document.getElementById('search-form');
+const tbody = document.getElementById('results-table-body');
+const pagination = document.getElementById('pagination');
+const pageSize=50;
+let currentPage = 1;
+let totalRecords = 0;
+let totalPages = 0;
+let results = [];
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loadTable(1);
+});
+
+function renderPagination() {
+  pagination.innerHTML = '';
+  let li = document.createElement('li');
+  if (currentPage != 1) {
+    li.className = "page-item";
+    li.innerHTML = '<button class="page-link" onclick="prevPage()">Previous</button>';
+    pagination.appendChild(li);
+  }
+  for (let i = 1; i <= totalPages; i++) {
+    const li = document.createElement('li');
+    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+    li.innerHTML = `<button class="page-link" onclick="loadTable(${i})">${i}</button>`;
+    pagination.appendChild(li);
+  }
+  if (currentPage != totalPages) {
+    li = document.createElement('li');
+    li.className = "page-item";
+    li.innerHTML = '<button class="page-link" onclick="nextPage()">Next</button>';
+    pagination.appendChild(li);
+  }
+}
+
+async function loadTable(page = 1) {
+  let data = Object.fromEntries(new FormData(form));
+  data.page = currentPage = page;
+  const params = new URLSearchParams(data).toString();
+  const res = await fetch('/list?' + params);
+  const response = await res.json();
+  results = response["rows"];
+  totalRecords = response["total_count"];
+  totalPages = Math.ceil(totalRecords / pageSize);
+  
+  tbody.innerHTML = '';
+  for (const r of results) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${r[0]}</td>
+      <td>${r[1]}</td>
+      <td>${r[2]}</td>
+      <td>${isoToLocal(r[3])}</td>
+      <td>${r[4]}</td>`;
+    tbody.appendChild(row);
+  }
+  renderPagination();
+}
+
+
+function prevPage() { 
+  if (currentPage > 1) loadTable(currentPage - 1); 
+}
+function nextPage() { 
+  if (currentPage != totalPages) loadTable(currentPage + 1); 
+}
 function sortTable(n) {
   const table = document.getElementById("visitorTable");
   let rows, switching = true, dir = "asc", switchcount = 0;
@@ -50,13 +91,4 @@ function sortTable(n) {
       dir = "desc"; switching = true;
     }
   }
-}
-const cookies = document.cookie.split("; ");
-for (let cookie of cookies) {
-	const [key, value] = cookie.split("=");
-	if (key === "operator") {
-		operator_name = decodeURIComponent(value);
-		let returnText = document.getElementById("operator_name");
-		returnText.innerHTML = `Operator: ${operator_name}`;
-	}
 }

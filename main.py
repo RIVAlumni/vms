@@ -112,32 +112,38 @@ async def list_visitors(
 ):
     offset = (page - 1) * limit
     params = []
-    query = "SELECT nric, fullname, phone, datetime, operator FROM visitors WHERE 1=1"
+    query = "SELECT nric, fullname, phone, datetime, operator FROM visitors WHERE "
+    count_query = "SELECT COUNT(nric) FROM visitors WHERE "
+    where_clause = "1=1"
 
     if nric:
-        query += " AND nric LIKE ?"
+        where_clause += " AND nric LIKE ?"
         params.append(f"%{nric}%")
     if fullname:
-        query += " AND fullname LIKE ?"
+        where_clause += " AND fullname LIKE ?"
         params.append(f"%{fullname}%")
     if phone:
-        query += " AND phone LIKE ?"
+        where_clause += " AND phone LIKE ?"
         params.append(f"%{phone}%")
     if time:
-        query += " AND datetime LIKE ?"
+        where_clause += " AND datetime LIKE ?"
         params.append(f"%{time}%")
     if opfilter:
-        query += " AND operator LIKE ?"
+        where_clause += " AND operator LIKE ?"
         params.append(f"%{opfilter}%")
 
+    query += where_clause
     query += f" ORDER BY datetime DESC LIMIT {limit} OFFSET ?"
+    count_query += where_clause
     ip = request.client.host
-    log_event(ip, operator, f"Query: {query}")
-    params.append(offset)
+    log_event(ip, operator, f"Query: {query}, Count Query: {count_query}, params: {params}")
 
     conn = sqlite3.connect(DB)
     c = conn.cursor()
+    c.execute(count_query, params)
+    count = c.fetchone()[0]
+    params.append(offset)
     c.execute(query, params)
     rows = c.fetchall()
     conn.close()
-    return {"rows": rows}
+    return {"rows": rows, "total_count": count}
