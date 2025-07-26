@@ -3,22 +3,24 @@
 {% block title %}Login{% endblock %}
 
 {% block head %}
-  <script src="/static/login.js" defer></script>
+<script>
+function setWatermark(color) {
+  // unused
+}
+</script>
 {% endblock %}
 
+{% block html_title %}VMS Login{% endblock %}
 {% block content %}
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <h1 class="text-center mb-3">VMS Login</h3>
-        <form onsubmit="login(event)">
-          <div class="mb-3">
-            <label for="operator" class="form-label">Operator Name</label>
-            <input type="text" class="form-control" id="operator" name="operator" maxlength="66" placeholder="Your name" required>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
-      </div>
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <form method="POST" action="/login">
+        <div class="mb-3 text-center">
+          <label for="operator" class="form-label">Operator Name</label>
+          <input type="text" class="form-control" id="operator" name="operator" maxlength="66" placeholder="Your name" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
     </div>
   </div>
 {% endblock %}

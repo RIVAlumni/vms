@@ -1,0 +1,6 @@
+[data-bs-theme="dark"] #themeIcon {
+  color: #ffc107; /* amber */
+}
+[data-bs-theme="light"] #themeIcon {
+  color: #0d6efd; /* Bootstrap blue */
+}

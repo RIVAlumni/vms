@@ -6,10 +6,9 @@
   <script src="/static/form.js" defer></script>
 {% endblock %}
 
+{% block html_title %}Visitor Management{% endblock %}
 {% block inner_content %}
   <div class="container mt-5">
-    <h1 class="text-center">Visitor Management</h1>
-    <p id="operator_name" class="text-end" onclick="logout()"></p>
     <form onsubmit="submitForm(event)">
       <div class="mb-3">
         <label for="nric" class="form-label">NRIC</label>

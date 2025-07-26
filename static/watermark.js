@@ -19,7 +19,7 @@ function logout() {
   window.location.href = "/login";
 }
 
-function setWatermark(name, time) {
+function setWatermark(color = 'rgba(0, 0, 0, 0.1)') {
   const canvas = document.createElement('canvas');
   canvas.width = 300;
   canvas.height = 200;
@@ -27,13 +27,13 @@ function setWatermark(name, time) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = '20px Arial';
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(-Math.PI / 4); // 45° diagonally
   // Draw each line manually
-  const lines = [name, time];
+  const lines = [operator_name, login_time];
   const lineHeight = 24;
 
   lines.forEach((line, i) => {
@@ -43,6 +43,3 @@ function setWatermark(name, time) {
   const overlay = document.getElementById('watermark-overlay');
   overlay.style.backgroundImage = `url(${canvas.toDataURL()})`;
 }
-
-// Set your watermark text here
-setWatermark(operator_name, login_time);
