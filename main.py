@@ -1,13 +1,30 @@
+"""
+RIVA VMS implemented in FastAPI for Uvicorn
+"""
+
+from typing import Optional
+from datetime import datetime
+from re import fullmatch
+import logging
+from contextlib import asynccontextmanager
+import sqlite3 # To be changed to a SQL server for prod
+
 from fastapi import FastAPI, Request, Form, Response, Cookie, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from typing import Optional
-import sqlite3
-from datetime import datetime
-import re, logging
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Startup and shutdown actions"""
+    # startup action
+    init_db()
+    yield
+    # shutdown action, if any
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -17,6 +34,7 @@ logging.basicConfig(format=LOG_FMT, filename="visitor.log", level=logging.INFO, 
 DB = "visitors.db"
 
 def init_db():
+    """Initialise database"""
     conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS visitors (
@@ -29,25 +47,35 @@ def init_db():
     conn.commit()
     conn.close()
 
-def log_event(ip: str, op: str, detail: str):
-    logging.info(f"{ip} - {op} - {detail}")
+def log_event(*args):
+    """Logger"""
+    logging.info(" - ".join(args))
 
-@app.on_event("startup")
-def startup():
-    init_db()
+# Route /favicon.ico to /static/favicon.ico
+@app.get("/favicon.ico")
+async def favicon():
+    """Returns favicon"""
+    return FileResponse("static/favicon.ico")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, operator: Optional[str] = Cookie(default=None)):
+    """Default page
+    Authenticated - show VMS entry form
+    Unauthenticated - redirect to login
+    """
     if not operator:
         return RedirectResponse("/login")
     return templates.TemplateResponse("form.html", {"request": request, "operator": operator})
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request):
+    """Login page"""
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login")
 async def login_post(request: Request, response: Response, operator: str = Form(...)):
+    """Login submission handler
+    Sets cookies for operator and login_time, logs the login"""
     response = RedirectResponse("/", status_code=302)
     response.set_cookie(key="operator", value=operator)
     # Set login_time cookie as ISO datetime string
@@ -64,6 +92,7 @@ async def submit(
     phone: str = Form(...),
     operator: Optional[str] = Cookie(default=None)
 ):
+    """Submit visitor entry"""
     if not operator:
         return JSONResponse({"status": "ERROR", "msg": "Unauthorized"}, status_code=401)
 
@@ -76,7 +105,8 @@ async def submit(
     row = c.fetchone()
     if row:
         conn.close()
-        log_event(ip, operator, f"Submit: nric {row[0]} fullname {row[1]} phone {row[2]} datetime {row[3]} operator {row[4]} FAIL")
+        log_event(ip, operator, f"Submit: nric {row[0]} fullname {row[1]} phone {row[2]} \
+                  datetime {row[3]} operator {row[4]} FAIL")
         return {
             "status": "FAIL", 
             "nric": row[0], 
@@ -87,22 +117,25 @@ async def submit(
         }
 
     # Validation
-    if not re.fullmatch(r"\w\d{7}\w", nric):
+    if not fullmatch(r"\w\d{7}\w", nric):
         raise HTTPException(status_code=400, detail="Invalid NRIC")
-    if not re.fullmatch(r"\d{8}", phone):
+    if not fullmatch(r"\d{8}", phone):
         raise HTTPException(status_code=400, detail="Invalid phone number")
     if len(fullname) > 66 or len(operator) > 66:
         raise HTTPException(status_code=400, detail="Name too long")
 
-    c.execute("INSERT INTO visitors (nric, fullname, phone, datetime, operator) VALUES (?, ?, ?, ?, ?)",
+    c.execute("INSERT INTO visitors (nric, fullname, phone, datetime, operator) \
+               VALUES (?, ?, ?, ?, ?)",
               (nric.upper(), fullname, phone, now, operator))
-    log_event(ip, operator, f"Submit: nric {nric} fullname {fullname} phone {phone} datetime {now} operator {operator} OK")
+    log_event(ip, operator, f"Submit: nric {nric} fullname {fullname} phone {phone} \
+               datetime {now} operator {operator} OK")
     conn.commit()
     conn.close()
     return {"status": "OK"}
 
 @app.get("/search", response_class=HTMLResponse)
 async def search_page(request: Request, operator: Optional[str] = Cookie(default=None)):
+    """Search query page"""
     if not operator:
         return RedirectResponse("/login")
     return templates.TemplateResponse("search.html", {"request": request})
@@ -119,6 +152,7 @@ async def list_visitors(
     operator: Optional[str] = Cookie(default=None),
     limit: int = 50
 ):
+    """Search query handler"""
     offset = (page - 1) * limit
     params = []
     query = "SELECT nric, fullname, phone, datetime, operator FROM visitors WHERE "

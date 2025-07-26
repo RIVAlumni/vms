@@ -32,7 +32,13 @@ function setWatermark(name, time) {
   ctx.textBaseline = 'middle';
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(-Math.PI / 4); // 45° diagonally
-  ctx.fillText(`${name} ${time} `, 0, 0);
+  // Draw each line manually
+  const lines = [name, time];
+  const lineHeight = 24;
+
+  lines.forEach((line, i) => {
+    ctx.fillText(line, 0, (i - 0.5) * lineHeight);
+  });
 
   const overlay = document.getElementById('watermark-overlay');
   overlay.style.backgroundImage = `url(${canvas.toDataURL()})`;
