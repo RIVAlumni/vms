@@ -50,6 +50,8 @@ async def login_form(request: Request):
 async def login_post(request: Request, response: Response, operator: str = Form(...)):
     response = RedirectResponse("/", status_code=302)
     response.set_cookie(key="operator", value=operator)
+    # Set login_time cookie as ISO datetime string
+    response.set_cookie(key="login_time", value=datetime.now().isoformat())
     ip = request.client.host
     log_event(ip, operator, "Login")
     return response
@@ -75,7 +77,14 @@ async def submit(
     if row:
         conn.close()
         log_event(ip, operator, f"Submit: nric {row[0]} fullname {row[1]} phone {row[2]} datetime {row[3]} operator {row[4]} FAIL")
-        return {"status": "FAIL", "nric": row[0], "fullname": row[1], "phone": row[2], "datetime": row[3], "operator": row[4]}
+        return {
+            "status": "FAIL", 
+            "nric": row[0], 
+            "fullname": row[1], 
+            "phone": row[2], 
+            "datetime": row[3], 
+            "operator": row[4]
+        }
 
     # Validation
     if not re.fullmatch(r"\w\d{7}\w", nric):

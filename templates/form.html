@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Visitor Form</title>
-  <link rel="shortcut icon" href="/static/favicon.ico" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+{% extends "base_loggedin.html" %}
+
+{% block title %}Visitor Form{% endblock %}
+
+{% block inner_head %}
   <script src="/static/form.js" defer></script>
-  <script src="/static/logout.js" defer></script>
-</head>
-<body>
+{% endblock %}
+
+{% block inner_content %}
   <div class="container mt-5">
     <h1 class="text-center">Visitor Management</h1>
     <p id="operator_name" class="text-end" onclick="logout()"></p>
@@ -35,5 +33,4 @@
     </div>
     <div id="status" class="alert alert-info mt-3" style="display:none;"></div>
   </div>
-</body>
-</html>
+{% endblock %}

@@ -18,7 +18,15 @@ Frontend:
 	- allows for a encoded input from QR code and populate it into the form. The QR scanner will output in |NRIC|HP|NAME| - submit the form and display the status
 3. Query
 	 - show table contents, with filtering and sorting by any of the 5 columns
+4. Watermarking with username and datetime of login (name YYYYMMDD HHMMSS)
+
+Uses:
+1. Bootstrap CSS
+2. QRCode.JS to create the QR code (static/qrgen.html)
+3. FastAPI + Uvicorn backend
 
 To get started:
+```sh
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --reload
+```

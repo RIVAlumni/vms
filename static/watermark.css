@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+}
+#watermark-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  pointer-events: none;
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: auto;
+  opacity: 1; /* fully visible */
+}
