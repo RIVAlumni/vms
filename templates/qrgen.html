@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}VMS Generator{% endblock %}
+
+{% block head %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
+  <script src="/static/qrgen.js" defer></script>
+  <script>
+    function setWatermark(color) {
+      // unused
+    }
+  </script>
+{% endblock %}
+
+{% block html_title %}RIVA Entry QR Code Generator{% endblock %}
+{% block content %}
+    <h4 class="text-center">Show us this QR code, AND your student pass/NRIC at the counter.</h1>
+    <form onsubmit="submitForm(event)">
+      <div class="mb-3">
+        <label for="nric" class="form-label">NRIC</label>
+        <input type="text" class="form-control" id="nric" name="nric" required placeholder="T0XXXXXXA" pattern="^\w\d{7}\w$" onKeyUp="generateQR()">
+      </div>
+      <div class="mb-3">
+        <label for="fullname" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="fullname" name="fullname" maxlength="66" placeholder="Name on student pass/NRIC" onKeyUp="generateQR()" required pattern="^[A-Za-z0-9\s]+$">
+      </div>
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="text" class="form-control" id="phone" name="phone" required placeholder="8XXXXXXX, no spaces" onKeyUp="generateQR()" pattern="^\d{8}$">
+      </div>
+      <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+
+    <div id="qrcode" class="qrcode" style="display: block;"></div>
+    <h2 id="return_text"></h2>
+{% endblock %}

@@ -11,14 +11,16 @@ Backend:
 - if NRIC exists in the database, return FAIL with the details to the frontend. otherwise return a OK status. 
 
 Frontend: 
-1. Login
+1. Default Page - QR Generator
+- Enter details and get the QR
+2. Login
 	- login: key in operator's name - show in the top right of interface and send to server
-2. Submit
+3. Submit
 	- allows for manual input through a form: full name, NRIC, phone number
 	- allows for a encoded input from QR code and populate it into the form. The QR scanner will output in |NRIC|HP|NAME| - submit the form and display the status
-3. Query
+4. Query
 	 - show table contents, with filtering and sorting by any of the 5 columns
-4. Watermarking with username and datetime of login (name YYYYMMDD HHMMSS)
+5. Watermarking with username and datetime of login (name YYYYMMDD HHMMSS)
 
 Uses:
 1. Bootstrap CSS
@@ -28,5 +30,5 @@ Uses:
 To get started:
 ```sh
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```

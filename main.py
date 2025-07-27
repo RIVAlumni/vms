@@ -58,7 +58,17 @@ async def favicon():
     return FileResponse("static/favicon.ico")
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, operator: Optional[str] = Cookie(default=None)):
+async def qr_generate(request: Request):
+    """Default page
+    Authenticated - show VMS entry form
+    Unauthenticated - redirect to login
+    """
+    return templates.TemplateResponse("qrgen.html", {"request": request})
+
+
+
+@app.get("/form", response_class=HTMLResponse)
+async def form_page(request: Request, operator: Optional[str] = Cookie(default=None)):
     """Default page
     Authenticated - show VMS entry form
     Unauthenticated - redirect to login
@@ -76,7 +86,7 @@ async def login_form(request: Request):
 async def login_post(request: Request, response: Response, operator: str = Form(...)):
     """Login submission handler
     Sets cookies for operator and login_time, logs the login"""
-    response = RedirectResponse("/", status_code=302)
+    response = RedirectResponse("/form", status_code=302)
     response.set_cookie(key="operator", value=operator)
     # Set login_time cookie as ISO datetime string
     response.set_cookie(key="login_time", value=datetime.now().isoformat())

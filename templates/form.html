@@ -4,11 +4,11 @@
 
 {% block inner_head %}
   <script src="/static/form.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" integrity="sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+" crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block html_title %}Visitor Management{% endblock %}
 {% block inner_content %}
-  <div class="container mt-5">
     <form onsubmit="submitForm(event)">
       <div class="mb-3">
         <label for="nric" class="form-label">NRIC</label>
@@ -16,20 +16,22 @@
       </div>
       <div class="mb-3">
         <label for="fullname" class="form-label">Full Name</label>
-        <input type="text" class="form-control" id="fullname" name="fullname" maxlength="66" placeholder="Name on student pass/NRIC" required pattern="[A-Za-z0-9\s]+">
+        <input type="text" class="form-control" id="fullname" name="fullname" maxlength="66" placeholder="Name on student pass/NRIC" required pattern="^[A-Za-z0-9\s]+$">
       </div>
       <div class="mb-3">
         <label for="phone" class="form-label">Phone Number</label>
         <input type="text" class="form-control" id="phone" name="phone" required placeholder="8XXXXXXX, no spaces" pattern="^\d{8}$">
       </div>
       <button type="submit" class="btn btn-success">Submit</button>
+      <button type="button" class="btn btn-primary" onclick="toggleQRScanner()">Scan QR</button>
     </form>
+    <div id="status" class="alert alert-info mt-3" style="display:none;"></div>
     <br />
+    <!-- Camera preview -->
+    <div id="qr-reader" style="width: 100%; max-width: 400px; max-height: 400px; display: none;" class="mb-3"></div>
     <div class="form-floating">
       <textarea id="qr" class="form-control" onKeyUp="parseQR(this.value)" placeholder="QR Code"></textarea> 
       <p id="status"></p>
-      <label for="floatingTextarea">Scan QR Code here</label>
+      <label for="floatingTextarea">USB QR Code Scanner here</label>
     </div>
-    <div id="status" class="alert alert-info mt-3" style="display:none;"></div>
-  </div>
 {% endblock %}
